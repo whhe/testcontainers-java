@@ -61,6 +61,8 @@
   - modules/neo4j/**/*
 "modules/nginx":
   - modules/nginx/**/*
+"modules/oceanbase-ce":
+  - modules/oceanbase-ce/**/*
 "modules/oracle":
   - modules/oracle-xe/**/*
 "modules/orientdb":

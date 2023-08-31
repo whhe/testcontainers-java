@@ -38,6 +38,7 @@ body:
         - MySQL
         - Neo4j
         - NGINX
+        - OceanBase-CE
         - Oracle-XE
         - OrientDB
         - PostgreSQL
