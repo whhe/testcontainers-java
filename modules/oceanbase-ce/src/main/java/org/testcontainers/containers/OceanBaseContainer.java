@@ -45,25 +45,15 @@ public class OceanBaseContainer extends JdbcDatabaseContainer<OceanBaseContainer
         addExposedPorts(SQL_PORT, RPC_PORT);
     }
 
-    public Integer getSqlPort() {
-        return getMappedPort(SQL_PORT);
-    }
-
-    public Integer getRpcPort() {
-        return getMappedPort(RPC_PORT);
-    }
-
     @Override
     public String getDriverClassName() {
-        return "com.oceanbase.jdbc.Driver";
+        return "com.mysql.cj.jdbc.Driver";
     }
 
     @Override
     public String getJdbcUrl() {
         String additionalUrlParams = constructUrlParameters("?", "&");
-        return (
-            "jdbc:oceanbase://" + getHost() + ":" + getMappedPort(SQL_PORT) + "/" + databaseName + additionalUrlParams
-        );
+        return "jdbc:mysql://" + getHost() + ":" + getMappedPort(SQL_PORT) + "/" + databaseName + additionalUrlParams;
     }
 
     @Override
