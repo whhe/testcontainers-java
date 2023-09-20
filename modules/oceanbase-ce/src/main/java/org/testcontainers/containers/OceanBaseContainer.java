@@ -2,7 +2,6 @@ package org.testcontainers.containers;
 
 import org.apache.commons.lang3.StringUtils;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
@@ -27,10 +26,8 @@ public class OceanBaseContainer extends JdbcDatabaseContainer<OceanBaseContainer
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(DOCKER_IMAGE_NAME);
 
     private static final Integer SQL_PORT = 2881;
-
     private static final Integer RPC_PORT = 2882;
 
-    private static final String INIT_SCRIPT_PATH = "/root/boot/init.d/";
     private static final String SYSTEM_TENANT = "sys";
     private static final String DEFAULT_USERNAME = "root";
     private static final String DEFAULT_PASSWORD = "";
@@ -178,16 +175,6 @@ public class OceanBaseContainer extends JdbcDatabaseContainer<OceanBaseContainer
         }
         this.tenantName = tenantName;
         return self();
-    }
-
-    /**
-     * Set the sql file for initialization, which will be executed in the test tenant.
-     *
-     * @param sqlFile the sql file
-     * @return this
-     */
-    public OceanBaseContainer withInitSqlFile(Transferable sqlFile) {
-        return withCopyToContainer(sqlFile, INIT_SCRIPT_PATH);
     }
 
     @Override
