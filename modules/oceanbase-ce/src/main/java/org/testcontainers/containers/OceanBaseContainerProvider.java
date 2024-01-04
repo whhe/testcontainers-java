@@ -7,7 +7,7 @@ import org.testcontainers.utility.DockerImageName;
  */
 public class OceanBaseContainerProvider extends JdbcDatabaseContainerProvider {
 
-    private static final String DEFAULT_TAG = "4.2.0.0";
+    private static final String DEFAULT_TAG = "4.2.1_bp3";
 
     @Override
     public boolean supports(String databaseType) {

@@ -1,10 +1,11 @@
 package org.testcontainers.containers;
 
 import org.apache.commons.lang3.StringUtils;
-import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Testcontainers implementation for OceanBase.
@@ -25,54 +26,20 @@ public class OceanBaseContainer extends JdbcDatabaseContainer<OceanBaseContainer
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse(DOCKER_IMAGE_NAME);
 
+    private static final int DEFAULT_STARTUP_TIMEOUT_SECONDS = 240;
+    private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 120;
+
     private static final Integer SQL_PORT = 2881;
     private static final Integer RPC_PORT = 2882;
 
     private static final String SYSTEM_TENANT = "sys";
     private static final String DEFAULT_USERNAME = "root";
     private static final String DEFAULT_PASSWORD = "";
-    private static final String DEFAULT_TENANT_NAME = "test";
+    private static final String DEFAULT_TEST_TENANT_NAME = "test";
     private static final String DEFAULT_DATABASE_NAME = "test";
 
-    /**
-     * The deployment mode of OceanBase. See <a href="https://hub.docker.com/r/oceanbase/oceanbase-ce">Docker Hub</a> for more details.
-     */
-    enum Mode {
-        /**
-         * Standard standalone deployment with a monitor service.
-         */
-        NORMAL,
-
-        /**
-         * Similar to 'normal' mode, but uses less hardware resources.
-         */
-        MINI,
-
-        /**
-         * Standalone deployment without the monitor service, which uses the least hardware resources.
-         */
-        SLIM;
-
-        static Mode fromString(String mode) {
-            if (StringUtils.isEmpty(mode)) {
-                throw new IllegalArgumentException("Mode cannot be null or empty");
-            }
-            switch (mode.trim().toLowerCase()) {
-                case "normal":
-                    return NORMAL;
-                case "mini":
-                    return MINI;
-                case "slim":
-                    return SLIM;
-                default:
-                    throw new IllegalArgumentException("Unsupported mode: " + mode);
-            }
-        }
-    }
-
-    private Mode mode = Mode.SLIM;
-    private String sysRootPassword = DEFAULT_PASSWORD;
-    private String tenantName = DEFAULT_TENANT_NAME;
+    private String mode;
+    private String tenantName = DEFAULT_TEST_TENANT_NAME;
 
     public OceanBaseContainer(String dockerImageName) {
         this(DockerImageName.parse(dockerImageName));
@@ -82,8 +49,17 @@ public class OceanBaseContainer extends JdbcDatabaseContainer<OceanBaseContainer
         super(dockerImageName);
         dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
 
-        this.waitStrategy = Wait.forLogMessage(".*boot success!.*", 1).withStartupTimeout(Duration.ofMinutes(3));
+        preconfigure();
+    }
 
+    private void preconfigure() {
+        this.waitStrategy =
+            new LogMessageWaitStrategy()
+                .withRegEx(".*boot success!.*")
+                .withTimes(1)
+                .withStartupTimeout(Duration.of(DEFAULT_STARTUP_TIMEOUT_SECONDS, ChronoUnit.SECONDS));
+
+        withConnectTimeoutSeconds(DEFAULT_CONNECT_TIMEOUT_SECONDS);
         addExposedPorts(SQL_PORT, RPC_PORT);
     }
 
@@ -136,37 +112,23 @@ public class OceanBaseContainer extends JdbcDatabaseContainer<OceanBaseContainer
     }
 
     /**
-     * Set the deployment mode.
+     * Set the deployment mode, see <a href="https://hub.docker.com/r/oceanbase/oceanbase-ce">Docker Hub</a> for more details.
      *
-     * @param mode the deployment mode, can be 'slim', 'mini' or 'normal'
+     * @param mode the deployment mode
      * @return this
      */
     public OceanBaseContainer withMode(String mode) {
-        this.mode = Mode.fromString(mode);
+        this.mode = mode;
         return self();
     }
 
     /**
-     * Set the root password of sys tenant.
+     * Set the non-system tenant to be created for testing.
      *
-     * @param sysRootPassword the root password of sys tenant
+     * @param tenantName the name of tenant to be created
      * @return this
      */
-    public OceanBaseContainer withSysRootPassword(String sysRootPassword) {
-        if (sysRootPassword == null) {
-            throw new IllegalArgumentException("The root password of sys tenant cannot be null");
-        }
-        this.sysRootPassword = sysRootPassword;
-        return self();
-    }
-
-    /**
-     * Set the non-system tenant name to be created for testing.
-     *
-     * @param tenantName the tenant name to be created
-     * @return this
-     */
-    public OceanBaseContainer withTenantName(String tenantName) {
+    public OceanBaseContainer withTenant(String tenantName) {
         if (StringUtils.isEmpty(tenantName)) {
             throw new IllegalArgumentException("Tenant name cannot be null or empty");
         }
@@ -179,8 +141,11 @@ public class OceanBaseContainer extends JdbcDatabaseContainer<OceanBaseContainer
 
     @Override
     protected void configure() {
-        withEnv("MODE", mode.toString().toLowerCase());
-        withEnv("OB_ROOT_PASSWORD", sysRootPassword);
-        withEnv("OB_TENANT_NAME", tenantName);
+        if (StringUtils.isNotBlank(mode)) {
+            withEnv("MODE", mode);
+        }
+        if (!DEFAULT_TEST_TENANT_NAME.equals(tenantName)) {
+            withEnv("OB_TENANT_NAME", tenantName);
+        }
     }
 }

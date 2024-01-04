@@ -21,6 +21,8 @@ public class SimpleOceanBaseTest extends AbstractContainerDatabaseTest {
     public void testSimple() throws SQLException {
         try (
             OceanBaseContainer container = new OceanBaseContainer(OceanBaseTestImages.OCEANBASE_CE_IMAGE)
+                .withMode("slim")
+                .withEnv("FASTBOOT", "true")
                 .withLogConsumer(new Slf4jLogConsumer(logger))
         ) {
             container.start();
@@ -36,6 +38,8 @@ public class SimpleOceanBaseTest extends AbstractContainerDatabaseTest {
     public void testExplicitInitScript() throws SQLException {
         try (
             OceanBaseContainer container = new OceanBaseContainer(OceanBaseTestImages.OCEANBASE_CE_IMAGE)
+                .withMode("slim")
+                .withEnv("FASTBOOT", "true")
                 .withInitScript("init.sql")
                 .withLogConsumer(new Slf4jLogConsumer(logger))
         ) {
@@ -52,6 +56,8 @@ public class SimpleOceanBaseTest extends AbstractContainerDatabaseTest {
     public void testWithAdditionalUrlParamInJdbcUrl() {
         try (
             OceanBaseContainer container = new OceanBaseContainer(OceanBaseTestImages.OCEANBASE_CE_IMAGE)
+                .withMode("slim")
+                .withEnv("FASTBOOT", "true")
                 .withUrlParam("useSSL", "false")
                 .withLogConsumer(new Slf4jLogConsumer(logger))
         ) {
