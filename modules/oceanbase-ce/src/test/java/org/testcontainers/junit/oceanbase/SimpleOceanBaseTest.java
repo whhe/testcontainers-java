@@ -30,6 +30,7 @@ public class SimpleOceanBaseTest extends AbstractContainerDatabaseTest {
             ResultSet resultSet = performQuery(container, "SELECT 1");
             int resultSetInt = resultSet.getInt(1);
             assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
+            assertHasCorrectExposedAndLivenessCheckPorts(container);
         }
     }
 
@@ -65,5 +66,14 @@ public class SimpleOceanBaseTest extends AbstractContainerDatabaseTest {
             assertThat(jdbcUrl).contains("?");
             assertThat(jdbcUrl).contains("useSSL=false");
         }
+    }
+
+    private void assertHasCorrectExposedAndLivenessCheckPorts(OceanBaseContainer container) {
+        int sqlPort = 2881;
+        int rpcPort = 2882;
+
+        assertThat(container.getExposedPorts()).containsExactlyInAnyOrder(sqlPort, rpcPort);
+        assertThat(container.getLivenessCheckPortNumbers())
+            .containsExactlyInAnyOrder(container.getMappedPort(sqlPort), container.getMappedPort(rpcPort));
     }
 }

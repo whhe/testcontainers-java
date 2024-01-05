@@ -68,12 +68,9 @@ public class OceanBaseContainer extends JdbcDatabaseContainer<OceanBaseContainer
         getWaitStrategy().waitUntilReady(this);
     }
 
-    public Integer getSqlPort() {
-        return getActualPort(SQL_PORT);
-    }
-
-    public Integer getActualPort(int port) {
-        return "host".equals(getNetworkMode()) ? port : getMappedPort(port);
+    @Override
+    public Integer getMappedPort(int originalPort) {
+        return "host".equals(getNetworkMode()) ? originalPort : super.getMappedPort(originalPort);
     }
 
     @Override
@@ -88,7 +85,7 @@ public class OceanBaseContainer extends JdbcDatabaseContainer<OceanBaseContainer
 
     public String getJdbcUrl(String databaseName) {
         String additionalUrlParams = constructUrlParameters("?", "&");
-        return "jdbc:mysql://" + getHost() + ":" + getSqlPort() + "/" + databaseName + additionalUrlParams;
+        return "jdbc:mysql://" + getHost() + ":" + getMappedPort(SQL_PORT) + "/" + databaseName + additionalUrlParams;
     }
 
     @Override
