@@ -29,7 +29,6 @@ public class SimpleOceanBaseTest extends AbstractContainerDatabaseTest {
 
             ResultSet resultSet = performQuery(container, "SELECT 1");
             int resultSetInt = resultSet.getInt(1);
-
             assertThat(resultSetInt).as("A basic SELECT query succeeds").isEqualTo(1);
         }
     }
@@ -47,7 +46,6 @@ public class SimpleOceanBaseTest extends AbstractContainerDatabaseTest {
 
             ResultSet resultSet = performQuery(container, "SELECT foo FROM bar");
             String firstColumnValue = resultSet.getString(1);
-
             assertThat(firstColumnValue).as("Value from init script should equal real value").isEqualTo("hello world");
         }
     }
@@ -63,7 +61,6 @@ public class SimpleOceanBaseTest extends AbstractContainerDatabaseTest {
         ) {
             container.start();
 
-            container.start();
             String jdbcUrl = container.getJdbcUrl();
             assertThat(jdbcUrl).contains("?");
             assertThat(jdbcUrl).contains("useSSL=false");
